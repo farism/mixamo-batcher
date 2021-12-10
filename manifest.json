@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "name": "Mixamo Batch Utility",
+  "description": "Track which animations have been selected for which characters and batch download",
+  "version": "1.0",
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
+  "permissions": [
+    "<all_urls>",
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "tabCapture",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "background": {
+    "scripts": ["dist/background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.mixamo.com/*", "*://mixamo.com/*"],
+      "js": ["dist/content.js"],
+      "all_frames": true,
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://www.mixamo.com/*", "*://mixamo.com/*"],
+      "js": ["dist/inject-custom-xhr.js"],
+      "all_frames": true,
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": ["dist/ui/index.html", "dist/custom-xhr.js"]
+}
