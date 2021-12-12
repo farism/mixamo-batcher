@@ -4,5 +4,5 @@
     "importsNotUsedAsValues": "error",
     "isolatedModules": true
   },
-  "include": ["**/*.d.ts", "**/*.ts", "**/*.js", "**/*.svelte"]
+  "include": ["**/*.d.ts", "**/*.ts", "**/*.svelte"]
 }

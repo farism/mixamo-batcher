@@ -1,7 +1,3 @@
-<ul>
-  <slot />
-</ul>
-
 <style>
   ul {
     list-style: none;
@@ -26,3 +22,7 @@
     border-top: 1px solid #ddd;
   }
 </style>
+
+<ul>
+  <slot />
+</ul>

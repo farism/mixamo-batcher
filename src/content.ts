@@ -1,63 +1,73 @@
 import { Message, MessageType, Product } from './types'
 
-let viewProduct: Product | null
+let currentProductIds: string[] = []
 
-chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
+// listen to custom events dispatched from custom xhr injection
+window.addEventListener('mbu_Message', function (e: CustomEvent<Message>) {
+  chrome.runtime.sendMessage(e.detail)
+
+  if (e.detail.type === MessageType.ProductsFetched) {
+    currentProductIds = e.detail.payload
+  }
+} as EventListener)
+
+// listen to events dispatched from background/iframe
+chrome.runtime.onMessage.addListener((message: Message) => {
   if (message.type === MessageType.Init) {
-    sendResponse(localStorage.access_token)
-
-    return true
+    chrome.runtime.sendMessage({
+      type: MessageType.SetAccessToken,
+      payload: localStorage.access_token,
+    })
   } else if (message.type === MessageType.ViewProduct) {
-    viewProduct = message.payload
-  } else if (message.type === MessageType.OnCompleteRequestProducts) {
-    if (viewProduct) {
-      setTimeout(clickOnViewProduct, 250)
-    }
+    injectProduct(message.payload)
   }
 })
 
-function clickOnViewProduct() {
-  if (!viewProduct) {
-    return
+function injectProduct(product: Product) {
+  const script = document.createElement('script')
+  script.type = 'text/javascript'
+  script.text = `window.mbu_Product = ${JSON.stringify(product)}`
+
+  document.body.appendChild(script)
+
+  setTimeout(() => document.body.removeChild(script), 0)
+
+  setTimeout(() => clickOnViewProduct(product), 500)
+}
+
+function clickOnViewProduct(product: Product) {
+  const index = currentProductIds.indexOf(product.id)
+
+  if (index >= 0) {
+    const el = document.querySelectorAll('.product li')[index]
+    el.dispatchEvent(new Event('click', { bubbles: true }))
   }
-  0
+}
 
-  const query = document.querySelectorAll('.product li')
+function createIframe() {
+  const iframe = document.createElement('iframe')
+  iframe.id = 'mixamo-batch'
+  iframe.src = chrome.runtime.getURL('dist/ui/index.html')
+  iframe.style.setProperty('border', '0')
+  iframe.style.setProperty('bottom', '0')
+  iframe.style.setProperty('position', 'absolute')
+  iframe.style.setProperty('right', '0')
+  iframe.style.setProperty('width', '16.666666%')
+  iframe.style.setProperty('z-index', '1000')
 
-  const product = Array.from(query).find((el) => {
-    if (el.textContent) {
-      return el.textContent.indexOf(viewProduct?.description || '') >= 0
+  function setIframeHeight() {
+    const node = document.querySelector('.sidebar-list > *')
+
+    if (node) {
+      const rect = node.getBoundingClientRect()
+
+      iframe.style.setProperty('height', `calc(100% - ${rect.bottom + 10}px)`)
     }
-  })
-
-  if (product) {
-    product.dispatchEvent(new Event('click', { bubbles: true }))
   }
 
-  viewProduct = null
+  setInterval(setIframeHeight, 100)
+
+  document.body.appendChild(iframe)
 }
 
-// Create the iframe which will hold the UI
-const iframe = document.createElement('iframe')
-iframe.id = 'mixamo-batch'
-iframe.src = chrome.runtime.getURL('dist/ui/index.html')
-iframe.style.setProperty('border', '0')
-iframe.style.setProperty('bottom', '0')
-iframe.style.setProperty('position', 'absolute')
-iframe.style.setProperty('right', '0')
-iframe.style.setProperty('width', '16.666666%')
-iframe.style.setProperty('z-index', '1000')
-
-document.body.appendChild(iframe)
-
-function setIframeHeight() {
-  const node = document.querySelector('.sidebar-list > *')
-
-  if (node) {
-    const rect = node.getBoundingClientRect()
-
-    iframe.style.setProperty('height', `calc(100% - ${rect.bottom + 10}px)`)
-  }
-}
-
-setInterval(setIframeHeight, 100)
+createIframe()

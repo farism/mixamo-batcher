@@ -1,13 +1,12 @@
 export enum MessageType {
   Init,
-  OnCompleteUpdatePrimary,
-  OnBeforeRequestProducts,
-  OnCompleteRequestProducts,
-  OnBeforeRequestProduct,
-  OnCompleteRequestProduct,
-  OnBeforeRequestStream,
+  PrimaryUpdated,
+  ProductsFetched,
+  ProductFetched,
   ScreenCapture,
+  SetAccessToken,
   SetSearchQuery,
+  StreamFetched,
   ViewProduct,
 }
 
@@ -17,35 +16,31 @@ export type Message =
       payload?: any
     }
   | {
-      type: MessageType.OnCompleteUpdatePrimary
-      payload: chrome.webRequest.WebResponseCacheDetails
+      type: MessageType.PrimaryUpdated
+      payload: any
     }
   | {
-      type: MessageType.OnBeforeRequestProducts
-      payload: chrome.webRequest.WebRequestBodyDetails
+      type: MessageType.ProductFetched
+      payload: Product
     }
   | {
-      type: MessageType.OnCompleteRequestProducts
-      payload?: any
-    }
-  | {
-      type: MessageType.OnBeforeRequestProduct
-      payload: chrome.webRequest.WebRequestBodyDetails
-    }
-  | {
-      type: MessageType.OnCompleteRequestProduct
-      payload?: any
-    }
-  | {
-      type: MessageType.SetSearchQuery
-      payload: string
+      type: MessageType.ProductsFetched
+      payload: string[] // array of product ids, used to locate correct thumbnail to click on
     }
   | {
       type: MessageType.ScreenCapture
       payload?: any
     }
   | {
-      type: MessageType.OnBeforeRequestStream
+      type: MessageType.SetAccessToken
+      payload: string
+    }
+  | {
+      type: MessageType.SetSearchQuery
+      payload: string
+    }
+  | {
+      type: MessageType.StreamFetched
       payload: Stream
     }
   | {
@@ -56,6 +51,8 @@ export type Message =
 export interface Project {
   id: string
   name: string
+  download: Download
+  inplace: boolean
 }
 
 export interface Pack {
@@ -63,25 +60,12 @@ export interface Pack {
   projectId: string
   name: string
   character: Character
-  products: Product[]
+  products: PackProduct[]
 }
 
 export interface Character {
   id: string
   name: string
-}
-
-export interface ProductSimple {
-  category: string
-  character_type: string
-  description: string
-  id: string
-  motion_id: string
-  name: string
-  source: string
-  thumbnail: string
-  thumbnail_animated: string
-  type: string
 }
 
 export interface Product {
@@ -107,8 +91,17 @@ export interface Product {
     }
   }
   source: string
-  thumbnail: string
-  thumbnail_animated: string
+}
+
+export interface Download {
+  format: 'fbx7_2019' | 'fbx7_2019_ascii' | 'fbx7_unity' | 'fbx7_2014' | 'fbx6' | 'dae_mixamo'
+  fps: '24' | '30' | '60'
+  reducekf: '0' | '1' | '2'
+  skin: 'true' | 'false'
+}
+
+export interface PackProduct extends Product {
+  download: Download
 }
 
 export interface Stream {
@@ -134,6 +127,6 @@ export interface ExportResponse {
 }
 
 export interface Active {
-  project?: Project
-  pack?: Pack
+  projectId?: string | null
+  packId?: string | null
 }

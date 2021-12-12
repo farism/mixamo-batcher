@@ -1,9 +1,6 @@
 <script lang="ts">
-</script>
 
-<main>
-  <slot />
-</main>
+</script>
 
 <style>
   main {
@@ -12,3 +9,7 @@
     flex-direction: column;
   }
 </style>
+
+<main>
+  <slot />
+</main>

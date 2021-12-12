@@ -1,7 +1,3 @@
-<span class={$$props.class}>
-  <slot />
-</span>
-
 <style>
   span {
     font-style: italic;
@@ -9,3 +5,7 @@
     color: #aaa;
   }
 </style>
+
+<span class={$$props.class}>
+  <slot />
+</span>

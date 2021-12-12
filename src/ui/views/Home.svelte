@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Project } from '../../types'
-  import { active, createProject, removeProject, projects } from '../app'
+  import { active, exportProjects } from '../app'
   import Button from '../components/Button.svelte'
   import ClampedText from '../components/ClampedText.svelte'
   import ContentArea from '../components/ContentArea.svelte'
@@ -8,16 +8,32 @@
   import Input from '../components/Input.svelte'
   import List from '../components/List.svelte'
   import Main from '../components/Main.svelte'
-  import RemoveButton from '../components/RemoveButton.svelte'
   import Section from '../components/Section.svelte'
   import Sticky from '../components/Sticky.svelte'
   import Title from '../components/Title.svelte'
+  import { createProject, projects } from '../projects'
+
+  const store = projects.store
+
+  let importRef: HTMLInputElement
 
   let newProjectName: string = ''
 
   let newProjectWarning: boolean = false
 
   let newProjectRef: HTMLInputElement
+
+  function onClickExport() {
+    exportProjects()
+  }
+
+  function onClickImport() {
+    importRef.click()
+  }
+
+  function onChangeImportFile(e: Event) {
+    ;(e.target as HTMLInputElement).files?.[0].text().then(JSON.parse).then(console.log)
+  }
 
   function onClickCreateProject() {
     if (newProjectName === '') {
@@ -28,51 +44,10 @@
     }
   }
 
-  function onClickRemoveProject(project: Project) {
-    const msg = `Are you sure you want to delete the project "${project.name}"?`
-
-    if (confirm(msg)) {
-      removeProject(project)
-    }
-  }
-
   function onClickProject(project: Project) {
-    active.update((store) => ({ ...store, project }))
+    active.update((store) => ({ ...store, projectId: project.id }))
   }
 </script>
-
-<Main>
-  <Sticky>
-    <Section>
-      <Title />
-    </Section>
-    <Section>
-      <Input
-        bind:ref={newProjectRef}
-        bind:value={newProjectName}
-        on:input={() => (newProjectWarning = false)}
-        warning={newProjectWarning}
-        placeholder="New Project Name"
-      />
-      <Button block on:click={onClickCreateProject}>Create Project</Button>
-    </Section>
-    <Section>
-      <Heading>Projects</Heading>
-    </Section>
-  </Sticky>
-  <ContentArea>
-    <List>
-      {#each Object.entries($projects) as [id, project]}
-        <li on:click={() => onClickProject(project)}>
-          <div class="name">
-            <ClampedText text={project.name} />
-          </div>
-          <RemoveButton onClick={() => onClickRemoveProject(project)} />
-        </li>
-      {/each}
-    </List>
-  </ContentArea>
-</Main>
 
 <style>
   .name {
@@ -83,4 +58,50 @@
   li:hover :global(.remove) {
     display: block;
   }
+
+  .import {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    visibility: hidden;
+    width: 0;
+  }
 </style>
+
+<Main>
+  <Sticky>
+    <Section>
+      <Title />
+    </Section>
+    <Section>
+      <Button block on:click={onClickExport}>Export Projects</Button>
+      <Button block on:click={onClickImport}>Import Projects</Button>
+      <input class="import" bind:this={importRef} type="file" on:change={onChangeImportFile} />
+    </Section>
+    <Section>
+      <Input
+        bind:ref={newProjectRef}
+        bind:value={newProjectName}
+        on:input={() => (newProjectWarning = false)}
+        warning={newProjectWarning}
+        placeholder="New Project Name" />
+      <Button block on:click={onClickCreateProject}>Create Project</Button>
+    </Section>
+    <Section>
+      <Heading>Projects</Heading>
+    </Section>
+  </Sticky>
+  <ContentArea>
+    <List>
+      {#each Object.entries($store) as [id, project]}
+        <li on:click={() => onClickProject(project)}>
+          <div class="name">
+            <ClampedText text={project.name} />
+          </div>
+        </li>
+      {/each}
+    </List>
+  </ContentArea>
+</Main>

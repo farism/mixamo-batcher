@@ -3,16 +3,6 @@
   export let text = ''
 </script>
 
-{#if clamp === 1}
-  <span class="single-line" title={text}>
-    {text}
-  </span>
-{:else}
-  <span class="multi-line" style={`-webkit-line-clamp: ${clamp};`} title={text}>
-    {text}
-  </span>
-{/if}
-
 <style>
   .single-line {
     overflow: hidden;
@@ -29,3 +19,9 @@
     text-overflow: ellipsis;
   }
 </style>
+
+{#if clamp === 1}
+  <span class="single-line" title={text}>{text}</span>
+{:else}
+  <span class="multi-line" style={`-webkit-line-clamp: ${clamp};`} title={text}>{text}</span>
+{/if}

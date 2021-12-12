@@ -10,5 +10,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "esnext"
-  }
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "exclude": ["./dist/**", "**/*.js"]
 }

@@ -1,4 +1,4 @@
-import type { Message } from './types'
+import { Message } from '../types'
 
 export function getActiveTab() {
   return new Promise<chrome.tabs.Tab>((resolve, reject) => {

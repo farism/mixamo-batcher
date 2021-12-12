@@ -8,14 +8,6 @@
   $: displayValue = Math.round(((value + 1) / 2) * 100)
 </script>
 
-<div class="slider">
-  <div class="text">
-    <span>{label}</span>
-    <span>{displayValue}</span>
-  </div>
-  <input type="range" {min} {max} {step} bind:value on:change />
-</div>
-
 <style>
   .slider {
     color: #666768;
@@ -66,3 +58,11 @@
     box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   }
 </style>
+
+<div class="slider">
+  <div class="text">
+    <span>{label}</span>
+    <span>{displayValue}</span>
+  </div>
+  <input type="range" {min} {max} {step} bind:value on:change />
+</div>

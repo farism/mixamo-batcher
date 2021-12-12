@@ -7,18 +7,6 @@
   initialize()
 </script>
 
-{#if $accessToken}
-  {#if $active.pack}
-    <Pack />
-  {:else if $active.project}
-    <Project />
-  {:else}
-    <Home />
-  {/if}
-{:else}
-  Not logged in
-{/if}
-
 <style>
   :global * {
     box-sizing: border-box;
@@ -45,4 +33,19 @@
     font-size: 13px;
     height: 100%;
   }
+
+  :global(* + input),
+  :global(* + button) {
+    margin-top: 10px;
+  }
 </style>
+
+{#if $accessToken}
+  {#if $active.packId}
+    <Pack />
+  {:else if $active.projectId}
+    <Project />
+  {:else}
+    <Home />
+  {/if}
+{:else}Not logged in{/if}
