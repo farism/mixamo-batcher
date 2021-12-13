@@ -1,11 +1,32 @@
 <script lang="ts">
   import { accessToken, active, initialize } from './app'
+  import { projects } from './projects'
   import Home from './views/Home.svelte'
   import Pack from './views/Pack.svelte'
   import Project from './views/Project.svelte'
 
+  const store = projects.store
+
+  $: project = $store[$active.projectId || '']
+
+  $: pack = project && project.packs[$active.packId || '']
+
+  $: project && projects.set(project)
+
   initialize()
 </script>
+
+{#if $accessToken}
+  {#if project}
+    {#if pack}
+      <Pack bind:project bind:pack />
+    {:else}
+      <Project bind:project />
+    {/if}
+  {:else}
+    <Home />
+  {/if}
+{:else}Not logged in{/if}
 
 <style>
   :global * {
@@ -39,13 +60,3 @@
     margin-top: 10px;
   }
 </style>
-
-{#if $accessToken}
-  {#if $active.packId}
-    <Pack />
-  {:else if $active.projectId}
-    <Project />
-  {:else}
-    <Home />
-  {/if}
-{:else}Not logged in{/if}

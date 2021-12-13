@@ -6,6 +6,8 @@ specifiers:
   '@types/file-saver': ^2.0.4
   '@types/lodash': ^4.14.177
   '@types/qs': ^6.9.7
+  '@types/wicg-file-system-access': ^2020.9.4
+  browser-fs-access: ^0.23.0
   file-saver: ^2.0.5
   jszip: ^3.7.1
   localforage: ^1.10.0
@@ -24,6 +26,7 @@ specifiers:
   webpack-cli: ^4.9.1
 
 dependencies:
+  browser-fs-access: 0.23.0
   file-saver: 2.0.5
   jszip: 3.7.1
   localforage: 1.10.0
@@ -37,6 +40,7 @@ devDependencies:
   '@types/file-saver': 2.0.4
   '@types/lodash': 4.14.178
   '@types/qs': 6.9.7
+  '@types/wicg-file-system-access': 2020.9.4
   prettier: 2.5.1
   prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.2
   svelte: 3.44.2
@@ -153,6 +157,10 @@ packages:
     resolution: {integrity: sha512-BPdoIt1lfJ6B7rw35ncdwBZrAssjcwzI5LByIrYs+tpXlj/CAkuVdRsgZDdP4lq5EjyWzwxZCqAoFyHKFwp32g==}
     dependencies:
       '@types/node': 16.11.12
+    dev: true
+
+  /@types/wicg-file-system-access/2020.9.4:
+    resolution: {integrity: sha512-o43jUljwP0ZrQ927mPjGdJaBMfS12nf3VPj6Z52fMucxILrSs8tnfLbMDSn6cP3hrrLChc3SYneeEvecknNVtA==}
     dev: true
 
   /@webassemblyjs/ast/1.11.1:
@@ -359,6 +367,10 @@ packages:
     dependencies:
       fill-range: 7.0.1
     dev: true
+
+  /browser-fs-access/0.23.0:
+    resolution: {integrity: sha512-MMkxI9sHD5c//9qVFW8qM6qY9n/3PhLR6LhqMalJZK83O0/wrmzrzafy0JCGkaXvXcW5PC+Mq+A31DGoDkdQ9Q==}
+    dev: false
 
   /browserslist/4.18.1:
     resolution: {integrity: sha512-8ScCzdpPwR2wQh8IT82CA2VgDwjHyqMovPBZSNH54+tm4Jk2pCuv90gmAdH6J84OCRWi0b4gMe6O6XPXuJnjgQ==}

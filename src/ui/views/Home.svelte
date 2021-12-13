@@ -1,11 +1,12 @@
 <script lang="ts">
   import { Project } from '../../types'
-  import { active, exportProjects } from '../app'
+  import { active, exportAllData, suffix } from '../app'
   import Button from '../components/Button.svelte'
   import ClampedText from '../components/ClampedText.svelte'
   import ContentArea from '../components/ContentArea.svelte'
   import Heading from '../components/Heading.svelte'
   import Input from '../components/Input.svelte'
+  import Italic from '../components/Italic.svelte'
   import List from '../components/List.svelte'
   import Main from '../components/Main.svelte'
   import Section from '../components/Section.svelte'
@@ -23,12 +24,12 @@
 
   let newProjectRef: HTMLInputElement
 
-  function onClickExport() {
-    exportProjects()
-  }
-
   function onClickImport() {
     importRef.click()
+  }
+
+  function onClickExport() {
+    exportAllData()
   }
 
   function onChangeImportFile(e: Event) {
@@ -44,14 +45,51 @@
     }
   }
 
-  function onClickProject(project: Project) {
-    active.update((store) => ({ ...store, projectId: project.id }))
+  function onClickProject({ id }: Project) {
+    active.update((s) => ({ ...s, projectId: id }))
   }
 </script>
 
+<Main>
+  <Sticky>
+    <Section>
+      <Title />
+    </Section>
+    <Section>
+      <Button block on:click={onClickImport}>Import</Button>
+      <Button block on:click={onClickExport}>Export</Button>
+      <input class="import" bind:this={importRef} type="file" on:change={onChangeImportFile} />
+    </Section>
+    <Section>
+      <Input
+        bind:ref={newProjectRef}
+        bind:value={newProjectName}
+        on:input={() => (newProjectWarning = false)}
+        warning={newProjectWarning}
+        placeholder="New Project Name"
+      />
+      <Button block on:click={onClickCreateProject}>Create Project</Button>
+    </Section>
+    <Section>
+      <Heading>Projects</Heading>
+    </Section>
+  </Sticky>
+  <ContentArea>
+    <List>
+      {#each Object.entries($store) as [id, project]}
+        <li on:click={() => onClickProject(project)}>
+          <div class="name">
+            <ClampedText text={project.name} />
+            <Italic>{Object.keys(project.packs).length} Pack{suffix(project.packs)}</Italic>
+          </div>
+        </li>
+      {/each}
+    </List>
+  </ContentArea>
+</Main>
+
 <style>
   .name {
-    display: flex;
     flex: 1 1 auto;
   }
 
@@ -69,39 +107,3 @@
     width: 0;
   }
 </style>
-
-<Main>
-  <Sticky>
-    <Section>
-      <Title />
-    </Section>
-    <Section>
-      <Button block on:click={onClickExport}>Export Projects</Button>
-      <Button block on:click={onClickImport}>Import Projects</Button>
-      <input class="import" bind:this={importRef} type="file" on:change={onChangeImportFile} />
-    </Section>
-    <Section>
-      <Input
-        bind:ref={newProjectRef}
-        bind:value={newProjectName}
-        on:input={() => (newProjectWarning = false)}
-        warning={newProjectWarning}
-        placeholder="New Project Name" />
-      <Button block on:click={onClickCreateProject}>Create Project</Button>
-    </Section>
-    <Section>
-      <Heading>Projects</Heading>
-    </Section>
-  </Sticky>
-  <ContentArea>
-    <List>
-      {#each Object.entries($store) as [id, project]}
-        <li on:click={() => onClickProject(project)}>
-          <div class="name">
-            <ClampedText text={project.name} />
-          </div>
-        </li>
-      {/each}
-    </List>
-  </ContentArea>
-</Main>

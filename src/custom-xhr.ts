@@ -6,6 +6,20 @@ interface MutableXMLHttpRequest extends XMLHttpRequest {
   responseText: XMLHttpRequest['responseText']
 }
 
+export async function exportAllData() {
+  const handle = await window.showSaveFilePicker({
+    types: [
+      {
+        description: 'JSON Files',
+        accept: { 'application/json': '.json' },
+      },
+    ],
+  })
+  const writer = await handle.createWritable()
+  await writer.write(new Blob([JSON.stringify({})]))
+  await writer.close()
+}
+
 export function dispatchMessageEvent(message: Message) {
   window.dispatchEvent(new CustomEvent<Message>('mbu_Message', { detail: message }))
 }

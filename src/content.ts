@@ -19,11 +19,13 @@ chrome.runtime.onMessage.addListener((message: Message) => {
       payload: localStorage.access_token,
     })
   } else if (message.type === MessageType.ViewProduct) {
-    injectProduct(message.payload)
+    injectProductScript(message.payload)
+  } else if (message.type === MessageType.Export) {
+    injectExportScript(message.payload)
   }
 })
 
-function injectProduct(product: Product) {
+function injectProductScript(product: Product) {
   const script = document.createElement('script')
   script.type = 'text/javascript'
   script.text = `window.mbu_Product = ${JSON.stringify(product)}`
@@ -33,6 +35,31 @@ function injectProduct(product: Product) {
   setTimeout(() => document.body.removeChild(script), 0)
 
   setTimeout(() => clickOnViewProduct(product), 500)
+}
+function injectExportScript(data: object) {
+  const blob = JSON.stringify(data)
+  console.log({ data, blob })
+  const script = document.createElement('script')
+  script.type = 'module'
+  script.text = `
+    const handle = await window.showSaveFilePicker({
+      types: [
+        {
+          description: 'JSON Files',
+          accept: { 'application/json': '.json' },
+        },
+      ],
+    })
+    const writer = await handle.createWritable()
+    await writer.write(new Blob(['${blob}']))
+    await writer.close()
+  `
+
+  console.log({ script })
+
+  document.body.appendChild(script)
+
+  // setTimeout(() => document.body.removeChild(script), 0)
 }
 
 function clickOnViewProduct(product: Product) {

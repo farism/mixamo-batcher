@@ -1,7 +1,7 @@
 import localforage from 'localforage'
-import { get, Writable, writable } from 'svelte/store'
+import { get as storeGet, Writable, writable } from 'svelte/store'
 
-function syncFromPersistent<T extends { id: string }>(
+function load<T extends { id: string }>(
   persistent: LocalForage,
   store: Writable<Record<string, T>>,
 ) {
@@ -27,38 +27,41 @@ export function createStore<T extends { id: string }>(name: string) {
 
   const store = writable<Record<string, T>>({})
 
-  const loading = syncFromPersistent<T>(persistent, store)
+  const loading = load<T>(persistent, store)
+
+  function all() {
+    return storeGet(store)
+  }
+
+  function get(id: string) {
+    return storeGet(store)[id]
+  }
 
   function set(item: T) {
     store.update((s) => {
-      s[item.id] = item
-
-      return s
+      return { ...s, [item.id]: item }
     })
 
     persistent.setItem(item.id, item)
   }
 
-  function clear(item: T) {
+  function remove(item: T) {
     store.update((s) => {
-      delete s[item.id]
+      const { [item.id]: _, ...next } = s
 
-      return s
+      return next
     })
 
     persistent.removeItem(item.id)
   }
 
-  function data() {
-    return get(store)
-  }
-
   return {
     persistent,
     store,
-    set,
-    clear,
-    data,
     loading,
+    all,
+    get,
+    set,
+    remove,
   }
 }

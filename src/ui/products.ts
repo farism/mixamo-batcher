@@ -1,6 +1,5 @@
 import qs from 'qs'
-import { MessageType, Product, Stream } from '../types'
-import { getActivePack, packs } from './packs'
+import { MessageType, Pack, Product, Stream } from '../types'
 import { createStore } from './store'
 import { getActiveTab, sendMessageToActiveTab } from './tabs'
 
@@ -27,26 +26,20 @@ export function viewProduct(product: Product) {
   })
 }
 
-export function syncStreamParamsToProduct(stream: Stream) {
-  const pack = getActivePack()
+export function syncStreamParamsToProduct(pack: Pack, stream: Stream) {
   const gms = stream.gms_hash[0]
-
   if (pack && gms) {
     const product = pack.products.find((p) => p.details.gms_hash['model-id'] === gms['model-id'])
-
     if (product) {
       product.details.gms_hash['arm-space'] = gms['arm-space']
       product.details.gms_hash['inplace'] = gms['inplace']
       product.details.gms_hash['trim'] = gms['trim']
-
       gms.params
         .split(',')
         .map(parseFloat)
         .forEach((val, i) => {
           product.details.gms_hash.params[i][1] = val
         })
-
-      packs.set(pack)
     }
   }
 }

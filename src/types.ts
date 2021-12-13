@@ -8,6 +8,7 @@ export enum MessageType {
   SetSearchQuery,
   StreamFetched,
   ViewProduct,
+  Export,
 }
 
 export type Message =
@@ -47,17 +48,28 @@ export type Message =
       type: MessageType.ViewProduct
       payload: Product
     }
+  | {
+      type: MessageType.Export
+      payload: any
+    }
+
+export interface Preferences {
+  format: 'fbx7_2019' | 'fbx7_2019_ascii' | 'fbx7_unity' | 'fbx7_2014' | 'fbx6' | 'dae_mixamo'
+  fps: '24' | '30' | '60'
+  reducekf: '0' | '1' | '2'
+  skin: 'true' | 'false'
+}
 
 export interface Project {
   id: string
   name: string
-  download: Download
+  preferences: Preferences
   inplace: boolean
+  packs: Record<string, Pack>
 }
 
 export interface Pack {
   id: string
-  projectId: string
   name: string
   character: Character
   products: PackProduct[]
@@ -87,33 +99,20 @@ export interface Product {
       trim: [number, number]
       inplace: boolean
       'arm-space': number
-      params: Array<[string, number]>
+      params: [string, number][]
     }
   }
   source: string
 }
 
-export interface Download {
-  format: 'fbx7_2019' | 'fbx7_2019_ascii' | 'fbx7_unity' | 'fbx7_2014' | 'fbx6' | 'dae_mixamo'
-  fps: '24' | '30' | '60'
-  reducekf: '0' | '1' | '2'
-  skin: 'true' | 'false'
-}
-
 export interface PackProduct extends Product {
-  download: Download
+  projectOverride: boolean
+  preferences: Preferences
 }
 
 export interface Stream {
   character_id: string
-  gms_hash: Array<{
-    'model-id': number
-    mirror: boolean
-    trim: [number, number]
-    inplace: boolean
-    'arm-space': number
-    params: string
-  }>
+  gms_hash: Array<Omit<Product['details']['gms_hash'], 'params'> & { params: string }>
 }
 
 export interface ExportResponse {
@@ -129,4 +128,5 @@ export interface ExportResponse {
 export interface Active {
   projectId?: string | null
   packId?: string | null
+  productId?: string | null
 }

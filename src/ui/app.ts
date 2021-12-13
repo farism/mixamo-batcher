@@ -2,7 +2,6 @@ import { saveAs } from 'file-saver'
 import localforage from 'localforage'
 import { get, writable } from 'svelte/store'
 import { Active, Character, Message, MessageType, Product } from '../types'
-import { packs } from './packs'
 import { products, syncStreamParamsToProduct } from './products'
 import { projects } from './projects'
 import { sendMessageToActiveTab } from './tabs'
@@ -16,6 +15,16 @@ export const selectedProduct = writable<Product | null>(null)
 export const active = writable<Active>({})
 
 export const activePersistent = localforage.createInstance({ storeName: 'active' })
+
+export function suffix(val: Array<any> | object | number) {
+  return (Array.isArray(val)
+    ? val.length
+    : typeof val === 'object'
+    ? Object.keys(val).length
+    : val) === 1
+    ? ''
+    : 's'
+}
 
 export function fetchHeaders() {
   const token = get(accessToken)
@@ -31,7 +40,7 @@ export function fetchHeaders() {
   }
 }
 
-Promise.all([packs.loading, projects.loading, products.loading]).then(() => {
+Promise.all([projects.loading, products.loading]).then(() => {
   activePersistent.getItem<Active>('active').then((ap) => {
     if (ap) {
       active.set(ap)
@@ -48,32 +57,29 @@ export function initialize() {
     // console.log({ ...message, type: MessageType[message.type].toString() })
     if (message.type === MessageType.SetAccessToken) {
       accessToken.set(message.payload)
-    } else if (message.type === MessageType.PrimaryUpdated) {
-      fetchPrimary()
     } else if (message.type === MessageType.ProductFetched) {
       selectedProduct.set(message.payload)
       products.set(message.payload)
     } else if (message.type === MessageType.StreamFetched) {
-      syncStreamParamsToProduct(message.payload)
+      // syncStreamParamsToProduct(message.payload)
+    } else if (message.type === MessageType.PrimaryUpdated) {
+      fetchPrimary()
     }
   })
 
   sendMessageToActiveTab({ type: MessageType.Init })
 }
 
-export function exportProjects() {
-  const json = JSON.stringify({
-    projects: projects.data(),
-    products: products.data()
+export async function exportAllData() {
+  sendMessageToActiveTab({
+    type: MessageType.Export,
+    payload: projects.all(),
   })
-
-  const data = new Blob([json])
-
-  saveAs(data, 'projects.json')
 }
 
-export function importProjects() {
-}
+export function exportData() {}
+
+export function importProjects() {}
 
 function fetchPrimary() {
   const headers = fetchHeaders()
