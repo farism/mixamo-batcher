@@ -1,17 +1,10 @@
 import { Message, MessageType, Product } from './types'
 
-let currentProductIds: string[] = []
+let viewProduct: Product | null
 
-// listen to custom events dispatched from custom xhr injection
-window.addEventListener('mbu_Message', function (e: CustomEvent<Message>) {
-  chrome.runtime.sendMessage(e.detail)
-
-  if (e.detail.type === MessageType.ProductsFetched) {
-    currentProductIds = e.detail.payload
-  }
-} as EventListener)
-
-// listen to events dispatched from background/iframe
+/**
+ * listen to events sent from extension
+ */
 chrome.runtime.onMessage.addListener((message: Message) => {
   if (message.type === MessageType.Init) {
     chrome.runtime.sendMessage({
@@ -19,52 +12,50 @@ chrome.runtime.onMessage.addListener((message: Message) => {
       payload: localStorage.access_token,
     })
   } else if (message.type === MessageType.ViewProduct) {
-    injectProductScript(message.payload)
-  } else if (message.type === MessageType.Export) {
-    injectExportScript(message.payload)
+    viewProduct = message.payload
+    injectProductScript(viewProduct)
   }
 })
 
-function injectProductScript(product: Product) {
+/**
+ * listen to custom events dispatched from xhr injection
+ */
+window.addEventListener('mbu_Message', function (e: CustomEvent<Message>) {
+  chrome.runtime.sendMessage(e.detail)
+
+  if (e.detail.type === MessageType.ProductsFetched && viewProduct) {
+    const index = e.detail.payload.indexOf(viewProduct.id)
+
+    if (index >= 0) {
+      injectProductScript(null)
+      setTimeout(() => clickOnViewProduct(index), 500)
+    } else {
+      chrome.runtime.sendMessage({
+        type: MessageType.FetchNextPage,
+        payload: viewProduct.description,
+      })
+    }
+  }
+} as EventListener)
+
+/**
+ * This is how we set the animation slider values when clicking an animation in a pack
+ *
+ * We inject the product into the window so the params can be used to override the params that
+ * are returned with a product api response
+ */
+function injectProductScript(product: Product | null) {
   const script = document.createElement('script')
   script.type = 'text/javascript'
   script.text = `window.mbu_Product = ${JSON.stringify(product)}`
-
   document.body.appendChild(script)
-
   setTimeout(() => document.body.removeChild(script), 0)
-
-  setTimeout(() => clickOnViewProduct(product), 500)
-}
-function injectExportScript(data: object) {
-  const blob = JSON.stringify(data)
-  console.log({ data, blob })
-  const script = document.createElement('script')
-  script.type = 'module'
-  script.text = `
-    const handle = await window.showSaveFilePicker({
-      types: [
-        {
-          description: 'JSON Files',
-          accept: { 'application/json': '.json' },
-        },
-      ],
-    })
-    const writer = await handle.createWritable()
-    await writer.write(new Blob(['${blob}']))
-    await writer.close()
-  `
-
-  console.log({ script })
-
-  document.body.appendChild(script)
-
-  // setTimeout(() => document.body.removeChild(script), 0)
 }
 
-function clickOnViewProduct(product: Product) {
-  const index = currentProductIds.indexOf(product.id)
-
+/**
+ * We store the page results and click on the tile which corresponds to the current `viewProduct`
+ */
+function clickOnViewProduct(index: number) {
   if (index >= 0) {
     const el = document.querySelectorAll('.product li')[index]
     el.dispatchEvent(new Event('click', { bubbles: true }))
@@ -74,7 +65,7 @@ function clickOnViewProduct(product: Product) {
 function createIframe() {
   const iframe = document.createElement('iframe')
   iframe.id = 'mixamo-batch'
-  iframe.src = chrome.runtime.getURL('dist/ui/index.html')
+  iframe.src = chrome.runtime.getURL('index.html')
   iframe.style.setProperty('border', '0')
   iframe.style.setProperty('bottom', '0')
   iframe.style.setProperty('position', 'absolute')
@@ -84,11 +75,13 @@ function createIframe() {
 
   function setIframeHeight() {
     const node = document.querySelector('.sidebar-list > *')
-
     if (node) {
       const rect = node.getBoundingClientRect()
 
       iframe.style.setProperty('height', `calc(100% - ${rect.bottom + 10}px)`)
+      iframe.style.setProperty('display', 'block')
+    } else {
+      iframe.style.setProperty('display', 'none')
     }
   }
 

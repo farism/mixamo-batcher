@@ -3,7 +3,7 @@
 </script>
 
 <div>
-  <Heading>Mixamo Batch Utility</Heading>
+  <Heading>Mixamo Batcher</Heading>
 </div>
 
 <style>

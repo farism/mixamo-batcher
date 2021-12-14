@@ -2,21 +2,17 @@ import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
 import { nanoid } from 'nanoid'
 import qs from 'qs'
-import { get } from 'svelte/store'
-import { ExportResponse, Pack, Product, Project } from '../types'
+import { get, writable } from 'svelte/store'
+import { ExportProductRequest, ExportProductResponse, Pack, Product, Project } from '../types'
 import { active, fetchHeaders, selectedCharacter, selectedProduct } from './app'
-import {
-  defaultPack,
-  defaultPackProduct,
-  defaultPreferences,
-  defaultProject,
-  exportRequestData,
-} from './constants'
+import { defaultPack, defaultPreferences, defaultProject } from './constants'
 import { viewProduct } from './products'
 import { createStore } from './store'
 import { getActiveTab } from './tabs'
 
 export const projects = createStore<Project>('projects')
+
+export const downloading = writable({ total: 0, complete: 0, zip: 0 })
 
 export function createProject(name: string) {
   const project: Project = defaultProject(name)
@@ -148,7 +144,7 @@ export function setSearchQuery(tab: chrome.tabs.Tab, product: Product) {
   })
 }
 
-export async function monitorProductDownload(uuid: string): Promise<any> {
+export async function monitorDownload(uuid: string): Promise<string | undefined> {
   const headers = fetchHeaders()
 
   if (!headers) {
@@ -157,42 +153,80 @@ export async function monitorProductDownload(uuid: string): Promise<any> {
 
   await new Promise((resolve) => setTimeout(resolve, 500))
 
-  return fetch(`https://www.mixamo.com/api/v1/characters/${uuid}/monitor`, {
+  const monitorResult = await fetch(`https://www.mixamo.com/api/v1/characters/${uuid}/monitor`, {
     method: 'GET',
     headers,
   })
-    .then((response) => response.json())
-    .then((json: ExportResponse) => {
-      if (json.status === 'completed') {
-        return json.job_result
-      } else if (json.status === 'processing') {
-        return monitorProductDownload(uuid)
-      } else {
-      }
-    })
+
+  const json = (await monitorResult.json()) as ExportProductResponse
+
+  if (json.status === 'completed') {
+    return json.job_result
+  } else if (json.status === 'processing') {
+    return monitorDownload(uuid)
+  } else {
+    // TODO handle other?
+  }
 }
 
-export function downloadPack() {
+export async function downloadPack(project: Project, pack: Pack) {
   const headers = fetchHeaders()
 
   if (!headers) {
     return
   }
 
-  fetch('https://www.mixamo.com/api/v1/animations/export', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(exportRequestData),
-  })
-    .then((response) => response.json())
-    .then((json: ExportResponse) => monitorProductDownload(json.uuid))
-    .then((file) => fetch(file))
-    .then((response) => response.blob())
-    .then((blob) => {
-      const jszip = new JSZip()
-      jszip.file('first.fbx', blob)
-      jszip.generateAsync({ type: 'blob' }).then((blob) => {
-        saveAs(blob, 'files.zip')
-      })
+  downloading.set({ total: pack.products.length, complete: 0, zip: 0 })
+
+  const zip = new JSZip()
+
+  for (let p of pack.products) {
+    const preferences = p.projectOverride ? p.preferences : project.preferences
+
+    const body: ExportProductRequest = {
+      character_id: pack.character.id,
+      product_name: p.name,
+      preferences,
+      gms_hash: [
+        {
+          ...p.details.gms_hash,
+          params: p.details.gms_hash.params.map((param) => param[1]).join(','),
+        },
+      ],
+      type: 'Motion',
+    }
+
+    const name = `${p.name}${preferences.format.includes('dae') ? '.dae' : '.fbx'}`
+
+    const exportResult = await fetch('https://www.mixamo.com/api/v1/animations/export', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
     })
+
+    if (exportResult.status === 202) {
+      const json = (await exportResult.json()) as ExportProductResponse
+      const downloadUrl = await monitorDownload(json.uuid)
+
+      if (downloadUrl) {
+        const downloadResult = await fetch(downloadUrl)
+
+        if (downloadResult.status === 200) {
+          const downloadBlob = await downloadResult.blob()
+          zip.file(name, downloadBlob)
+          downloading.update((s) => ({ ...s, complete: s.complete + 1 }))
+        }
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+  }
+
+  const packBlob = await zip.generateAsync({ type: 'blob' }, (metadata) => {
+    downloading.update((s) => ({ ...s, zip: metadata.percent }))
+  })
+
+  saveAs(packBlob, pack.name)
+
+  downloading.set({ total: 0, complete: 0, zip: 0 })
 }

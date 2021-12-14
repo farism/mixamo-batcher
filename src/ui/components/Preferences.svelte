@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Preferences } from '../../types'
-  import Heading from './Heading.svelte'
   import Select from './Select.svelte'
 
   export let showInplace: boolean = true

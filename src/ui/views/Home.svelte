@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Project } from '../../types'
-  import { active, exportAllData, suffix } from '../app'
+  import { active, exportData, importData, suffix } from '../app'
   import Button from '../components/Button.svelte'
   import ClampedText from '../components/ClampedText.svelte'
   import ContentArea from '../components/ContentArea.svelte'
@@ -29,11 +29,11 @@
   }
 
   function onClickExport() {
-    exportAllData()
+    exportData()
   }
 
   function onChangeImportFile(e: Event) {
-    ;(e.target as HTMLInputElement).files?.[0].text().then(JSON.parse).then(console.log)
+    importData(importRef.files?.[0])
   }
 
   function onClickCreateProject() {
@@ -58,7 +58,13 @@
     <Section>
       <Button block on:click={onClickImport}>Import</Button>
       <Button block on:click={onClickExport}>Export</Button>
-      <input class="import" bind:this={importRef} type="file" on:change={onChangeImportFile} />
+      <input
+        type="file"
+        accept="application/json"
+        class="import"
+        bind:this={importRef}
+        on:change={onChangeImportFile}
+      />
     </Section>
     <Section>
       <Input

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { zip } from 'lodash'
   import { onMount } from 'svelte'
   import { derived } from 'svelte/store'
   import { Message, MessageType, Pack, Product, Project } from '../../types'
@@ -14,11 +15,19 @@
   import Main from '../components/Main.svelte'
   import Preferences from '../components/Preferences.svelte'
   import Section from '../components/Section.svelte'
+  import Spinner from '../components/Spinner.svelte'
   import Sticky from '../components/Sticky.svelte'
   import Title from '../components/Title.svelte'
   import CaretIcon from '../icons/CaretIcon.svelte'
   import { syncStreamParamsToProduct, viewProduct } from '../products'
-  import { addProduct, downloadPack, duplicatePack, removePack, removeProduct } from '../projects'
+  import {
+    addProduct,
+    downloading,
+    downloadPack,
+    duplicatePack,
+    removePack,
+    removeProduct,
+  } from '../projects'
 
   export let project: Project
 
@@ -94,12 +103,12 @@
 
   function onMessage(message: Message) {
     if (message.type === MessageType.StreamFetched) {
-      syncStreamParamsToProduct(pack, message.payload)
+      syncStreamParamsToProduct(project, pack, message.payload)
     }
   }
 
   function onClickDownloadPack() {
-    downloadPack()
+    downloadPack(project, pack)
   }
 
   onMount(() => {
@@ -144,14 +153,29 @@
         <div class="center-pad">
           <ClampedText clamp={1} text={pack?.character.name} />
         </div>
-        <Button block on:click={onClickSwitchCharacter}>Switch to Current</Button>
+        <Button block on:click={onClickSwitchCharacter}>Switch to Displayed</Button>
       </Section>
       <Section>
         <Button block warning on:click={onClickRemovePack}>Delete Pack</Button>
       </Section>
     {:else}
       <Section>
-        <Button block on:click={onClickDownloadPack}>Download Pack</Button>
+        <Button
+          block
+          disabled={$downloading.total > 0}
+          title={$downloading.total > 0 ? 'Download in progress' : ''}
+          on:click={onClickDownloadPack}
+        >
+          {#if $downloading.total > 0}
+            {#if $downloading.zip > 0}
+              Preparing Zip ({$downloading.zip}%)
+            {:else}
+              Processing ({$downloading.complete} / {$downloading.total})
+            {/if}
+          {:else}
+            Download Pack
+          {/if}
+        </Button>
       </Section>
       <Section>
         <Heading>Add Animations</Heading>
@@ -214,8 +238,8 @@
                   {/if}
                   <Button block on:click={() => onClickRemoveProduct(product)}>Remove</Button>
                   <pre style="display:none">
-                  <code>{JSON.stringify(product, null, 2)}</code>
-                </pre>
+                    <code>{JSON.stringify(product.details.gms_hash, null, 2)}</code>
+                  </pre>
                 </div>
               {/if}
             </li>
@@ -227,20 +251,6 @@
 </Main>
 
 <style>
-  li .animation-settings {
-    padding: 5px 0;
-    margin: 0 0 10px 0;
-  }
-
-  li :global(.remove) {
-    visibility: hidden;
-    display: block;
-  }
-
-  li:hover :global(.remove) {
-    visibility: visible;
-  }
-
   .center-pad {
     padding: 10px 10px 0 10px;
     text-align: center;
@@ -276,7 +286,7 @@
   }
 
   .animation-settings {
-    padding-top: 10px;
-    margin: 0 10px;
+    margin: 0 0 10px 0;
+    padding: 5px 0;
   }
 </style>

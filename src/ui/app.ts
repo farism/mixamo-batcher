@@ -1,8 +1,8 @@
 import { saveAs } from 'file-saver'
 import localforage from 'localforage'
 import { get, writable } from 'svelte/store'
-import { Active, Character, Message, MessageType, Product } from '../types'
-import { products, syncStreamParamsToProduct } from './products'
+import { Active, Character, ExportFile, Message, MessageType, Product, Project } from '../types'
+import { products } from './products'
 import { projects } from './projects'
 import { sendMessageToActiveTab } from './tabs'
 
@@ -70,16 +70,32 @@ export function initialize() {
   sendMessageToActiveTab({ type: MessageType.Init })
 }
 
-export async function exportAllData() {
-  sendMessageToActiveTab({
-    type: MessageType.Export,
-    payload: projects.all(),
-  })
+export function importData(file?: File) {
+  if (file) {
+    file
+      .text()
+      .then((text) => JSON.parse(text) as ExportFile)
+      .then((data) => {
+        Object.values(data.projects).forEach((p) => {
+          if (
+            !projects.get(p.id) ||
+            confirm(`Are you sure you want to overwrite the project "${p.name}"`)
+          ) {
+            projects.set(p)
+          }
+        })
+      })
+  }
 }
 
-export function exportData() {}
+export async function exportData(project?: Project) {
+  const data = {
+    version: 1,
+    projects: project ? { [project.id]: project } : projects.all(),
+  }
 
-export function importProjects() {}
+  saveAs(new Blob([JSON.stringify(data)]), 'mbu_projects.json')
+}
 
 function fetchPrimary() {
   const headers = fetchHeaders()

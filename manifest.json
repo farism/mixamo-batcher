@@ -1,36 +1,31 @@
 {
   "manifest_version": 2,
-  "name": "Mixamo Batch Utility",
-  "description": "Track which animations have been selected for which characters and batch download",
+  "name": "Mixamo Batcher",
+  "description": "Mixamo Batcher allows you to create and save animation packs, and download them as an archive file",
   "version": "1.0",
-  "browser_action": {
-    "default_icon": "icon.png"
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   },
-  "permissions": [
-    "<all_urls>",
-    "activeTab",
-    "contextMenus",
-    "storage",
-    "tabCapture",
-    "webRequest",
-    "webRequestBlocking"
-  ],
+  "permissions": ["<all_urls>"],
   "background": {
-    "scripts": ["dist/background.js"]
+    "scripts": ["background.js"]
   },
   "content_scripts": [
     {
       "matches": ["*://www.mixamo.com/*", "*://mixamo.com/*"],
-      "js": ["dist/content.js"],
+      "js": ["content.js"],
       "all_frames": true,
       "run_at": "document_end"
     },
     {
       "matches": ["*://www.mixamo.com/*", "*://mixamo.com/*"],
-      "js": ["dist/inject-custom-xhr.js"],
+      "js": ["inject-xhr.js"],
       "all_frames": true,
       "run_at": "document_start"
     }
   ],
-  "web_accessible_resources": ["dist/ui/index.html", "dist/custom-xhr.js"]
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+  "web_accessible_resources": ["index.html", "xhr.js"]
 }

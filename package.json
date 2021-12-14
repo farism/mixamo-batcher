@@ -1,29 +1,32 @@
 {
-  "name": "mixamo-batch",
+  "name": "mixamo-batcher",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev:ui": "vite build --watch",
     "dev:extension": "webpack --watch",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "rimraf dist && vite build & webpack && pnpm zip",
+    "zip": "cd dist && bestzip extension.zip *"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "1.0.0-next.31",
     "@types/chrome": "^0.0.166",
     "@types/file-saver": "^2.0.4",
-    "@types/lodash": "^4.14.177",
+    "@types/lodash": "^4.14.178",
     "@types/qs": "^6.9.7",
     "@types/wicg-file-system-access": "^2020.9.4",
+    "bestzip": "^2.2.0",
     "prettier": "^2.5.1",
     "prettier-plugin-svelte": "^2.5.1",
+    "rimraf": "^3.0.2",
+    "rollup-plugin-copy": "^3.4.0",
     "svelte": "3.44.2",
     "svelte-loader": "^3.1.2",
-    "svelte-preprocess": "^4.9.8",
+    "svelte-preprocess": "^4.10.0",
     "ts-loader": "^9.2.6",
-    "typescript": "^4.5.2",
+    "typescript": "^4.5.4",
     "vite": "2.6.14",
-    "webpack": "^5.64.4",
+    "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
@@ -33,7 +36,7 @@
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "nanoid": "^3.1.30",
-    "qs": "^6.10.1"
+    "qs": "^6.10.2"
   },
   "msw": {
     "workerDirectory": "public"

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { accessToken, active, initialize } from './app'
   import { projects } from './projects'
   import Home from './views/Home.svelte'
@@ -14,6 +15,12 @@
   $: project && projects.set(project)
 
   initialize()
+
+  onMount(() => {
+    window.onunhandledrejection = (e) => {
+      console.log('we got exception, but the app has crashed', e)
+    }
+  })
 </script>
 
 {#if $accessToken}

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { Preferences, Pack, PackProduct, Project, Character } from '../types'
+import { Character, Pack, PackProduct, Preferences, Project } from '../types'
 
 export function defaultProject(name: string = ''): Project {
   return {
@@ -62,27 +62,4 @@ export function defaultPreferences(): Preferences {
     fps: '30',
     reducekf: '0',
   }
-}
-
-export const exportRequestData = {
-  gms_hash: [
-    {
-      'model-id': 102450901,
-      mirror: false,
-      trim: [0, 100],
-      overdrive: 0,
-      params: '0,0',
-      'arm-space': 0,
-      inplace: false,
-    },
-  ],
-  preferences: {
-    format: 'fbx7_2019',
-    skin: 'true',
-    fps: '30',
-    reducekf: '0',
-  },
-  character_id: 'efb06b46-a470-49b2-b7da-a06755d4dba7',
-  type: 'Motion',
-  product_name: 'Shoved Reaction With Spin',
 }

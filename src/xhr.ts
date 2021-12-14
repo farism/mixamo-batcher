@@ -1,4 +1,4 @@
-import { Message, MessageType, Product } from './types'
+import { Message, MessageType } from './types'
 
 interface MutableXMLHttpRequest extends XMLHttpRequest {
   _url: string

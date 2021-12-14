@@ -1,15 +1,18 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-import type { WatcherOptions } from 'rollup'
-
-const watcherOptions: WatcherOptions = {}
+import copy from 'rollup-plugin-copy'
+import { WatcherOptions } from 'rollup'
 
 export default defineConfig({
-  base: 'dist/ui',
   build: {
     sourcemap: 'inline',
-    outDir: 'dist/ui',
-    watch: watcherOptions, // null to disable (default)
+    outDir: 'dist',
+    emptyOutDir: false,
   },
-  plugins: [svelte()],
+  plugins: [
+    svelte(),
+    copy({
+      targets: [{ src: ['manifest.json', 'icon*'], dest: 'dist' }],
+    }),
+  ],
 })

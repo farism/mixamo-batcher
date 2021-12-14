@@ -6,12 +6,6 @@
   export let title = ''
 </script>
 
-<style>
-  button:disabled {
-    pointer-events: auto;
-  }
-</style>
-
 <button
   class="btn"
   class:btn-success={success}
@@ -20,6 +14,15 @@
   class:btn-block={block}
   {disabled}
   {title}
-  on:click>
+  on:click
+  on:mouseover
+  on:focus
+>
   <slot />
 </button>
+
+<style>
+  button:disabled {
+    pointer-events: auto;
+  }
+</style>

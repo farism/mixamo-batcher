@@ -4,8 +4,8 @@ export default {
   mode: 'production',
   entry: {
     'background.js': path.resolve('./src/background.ts'),
-    'inject-custom-xhr.js': path.resolve('./src/inject-custom-xhr.ts'),
-    'custom-xhr.js': path.resolve('./src/custom-xhr.ts'),
+    'inject-xhr.js': path.resolve('./src/inject-xhr.ts'),
+    'xhr.js': path.resolve('./src/xhr.ts'),
     'content.js': path.resolve('./src/content.ts'),
   },
   devtool: 'inline-source-map',

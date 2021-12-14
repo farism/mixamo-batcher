@@ -3,12 +3,12 @@ export enum MessageType {
   PrimaryUpdated,
   ProductsFetched,
   ProductFetched,
-  ScreenCapture,
   SetAccessToken,
-  SetSearchQuery,
   StreamFetched,
   ViewProduct,
+  FetchNextPage,
   Export,
+  Download,
 }
 
 export type Message =
@@ -29,16 +29,8 @@ export type Message =
       payload: string[] // array of product ids, used to locate correct thumbnail to click on
     }
   | {
-      type: MessageType.ScreenCapture
-      payload?: any
-    }
-  | {
       type: MessageType.SetAccessToken
-      payload: string
-    }
-  | {
-      type: MessageType.SetSearchQuery
-      payload: string
+      payload: string // the access token
     }
   | {
       type: MessageType.StreamFetched
@@ -50,7 +42,15 @@ export type Message =
     }
   | {
       type: MessageType.Export
-      payload: any
+      payload: ExportFile
+    }
+  | {
+      type: MessageType.Download
+      payload: Pack
+    }
+  | {
+      type: MessageType.FetchNextPage
+      payload: string // the search query
     }
 
 export interface Preferences {
@@ -80,6 +80,19 @@ export interface Character {
   name: string
 }
 
+export interface GmsHash {
+  'model-id': number
+  mirror: boolean
+  trim: [number, number]
+  inplace: boolean
+  'arm-space': number
+  params: [string, number][]
+}
+
+export interface GmsHashStream extends Omit<GmsHash, 'params'> {
+  params: string
+}
+
 export interface Product {
   id: string
   type: string
@@ -93,14 +106,7 @@ export interface Product {
     loopable: boolean
     default_frame_length: number
     duration: number
-    gms_hash: {
-      'model-id': number
-      mirror: boolean
-      trim: [number, number]
-      inplace: boolean
-      'arm-space': number
-      params: [string, number][]
-    }
+    gms_hash: GmsHash
   }
   source: string
 }
@@ -112,10 +118,18 @@ export interface PackProduct extends Product {
 
 export interface Stream {
   character_id: string
-  gms_hash: Array<Omit<Product['details']['gms_hash'], 'params'> & { params: string }>
+  gms_hash: GmsHashStream[]
 }
 
-export interface ExportResponse {
+export interface ExportProductRequest {
+  character_id: string
+  product_name: string
+  preferences: Preferences
+  gms_hash: GmsHashStream[]
+  type: 'Motion'
+}
+
+export interface ExportProductResponse {
   job_result?: string
   job_type: string
   job_uuid: string
@@ -129,4 +143,9 @@ export interface Active {
   projectId?: string | null
   packId?: string | null
   productId?: string | null
+}
+
+export interface ExportFile {
+  version: number
+  projects: Record<string, Project>
 }
