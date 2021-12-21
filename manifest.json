@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Mixamo Batcher",
   "description": "Mixamo Batcher allows you to create and save animation packs, and download them as an archive file",
-  "version": "1.0",
+  "version": "1.2",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
