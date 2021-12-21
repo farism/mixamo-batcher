@@ -27,13 +27,13 @@ window.addEventListener('mbu_Message', function (e: CustomEvent<Message>) {
     const index = e.detail.payload.indexOf(viewProduct.id)
 
     if (index >= 0) {
-      injectProductScript(null)
       setTimeout(() => clickOnViewProduct(index), 500)
     } else {
-      chrome.runtime.sendMessage({
-        type: MessageType.FetchNextPage,
-        payload: viewProduct.description,
-      })
+      // TODO handle item not being on first page of page results
+      // chrome.runtime.sendMessage({
+      //   type: MessageType.FetchNextPage,
+      //   payload: viewProduct.description,
+      // })
     }
   }
 } as EventListener)

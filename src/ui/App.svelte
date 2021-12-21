@@ -18,7 +18,7 @@
 
   onMount(() => {
     window.onunhandledrejection = (e) => {
-      console.log('we got exception, but the app has crashed', e)
+      // console.log('we got exception', e)
     }
   })
 </script>

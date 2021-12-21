@@ -7,12 +7,12 @@ import { sendMessageToActiveTab } from './tabs'
 export const products = createStore<Product>('products')
 
 export async function viewProduct(product: Product) {
-  await updateQueryParams(product.description)
-
   sendMessageToActiveTab({
     type: MessageType.ViewProduct,
     payload: product,
   })
+
+  await updateQueryParams(product.description)
 }
 
 export function syncStreamParamsToProduct(project: Project, pack: Pack, stream: Stream) {

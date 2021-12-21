@@ -8,19 +8,23 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "permissions": ["<all_urls>"],
+  "permissions": [
+    "https://www.mixamo.com/*",
+    "https://mixamo.com/*",
+    "https://mixamo-storage-prod.s3-us-west-2.amazonaws.com/*"
+  ],
   "background": {
     "scripts": ["background.js"]
   },
   "content_scripts": [
     {
-      "matches": ["*://www.mixamo.com/*", "*://mixamo.com/*"],
+      "matches": ["https://www.mixamo.com/*", "https://mixamo.com/*"],
       "js": ["content.js"],
       "all_frames": true,
       "run_at": "document_end"
     },
     {
-      "matches": ["*://www.mixamo.com/*", "*://mixamo.com/*"],
+      "matches": ["https://www.mixamo.com/*", "https://mixamo.com/*"],
       "js": ["inject-xhr.js"],
       "all_frames": true,
       "run_at": "document_start"
